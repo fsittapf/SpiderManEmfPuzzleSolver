@@ -65,7 +65,7 @@ class Board:
 class Piece:
     VALID_VALUES = {"V2", "A3", "A1", "B3"}
 
-    def __init__(self, piece_id, initial_position, start_value, next_values):
+    def __init__(self, piece_id, initial_position, start_value, next_values, is_triple=False):
         self.id = piece_id
         self.values = {}
         
@@ -74,6 +74,9 @@ class Piece:
         
         if not all(value in Piece.VALID_VALUES for value in next_values):
             raise ValueError(f"Invalid values in next_values: {next_values}")
+
+        if is_triple and len(next_values) != 1:
+            raise ValueError("For triple values, only one value in next_values is allowed.")
         
         position = initial_position
         
@@ -82,11 +85,15 @@ class Piece:
         self.values[position] = start_value
         position = (position + 1) % 6
         
+        if is_triple:
+            self.values[position] = start_value
+            position = (position + 1) % 6
+
         for value in next_values:
-            self.values[position] = value
-            position = (position + 1) % 6
-            self.values[position] = value
-            position = (position + 1) % 6
+            count = 3 if is_triple else 2
+            for _ in range(count):
+                self.values[position] = value
+                position = (position + 1) % 6
 
     def __str__(self):
         return str(self.values)
@@ -108,7 +115,29 @@ if __name__ == '__main__':
     board.add_hexagon(hex4)
     board.add_hexagon(hex5)
     
-    '''EFM - CHINATOWN
+    ''' EMF - Finalcial District
+
+    '''
+
+    #''' EMF - Hell's Kitchen
+    
+    board.connect(hex1, 3, hex2) # 1, 2
+    board.connect(hex2, 2, hex3) # 2, 3
+    board.connect(hex2, 4, hex4) # 2, 4
+    board.connect(hex4, 3, hex5) # 4, 5
+
+    pieces = [
+        Piece(1, 1, "V2", ["B3"], is_triple=True),
+        Piece(2, 1, "B3", ["A3"], is_triple=True),
+        Piece(3, 1, "A3", ["A1"], is_triple=True),
+        Piece(4, 0, "B3", ["V2"], is_triple=True),
+        Piece(5, 2, "A3", ["A1"], is_triple=True),
+        Piece(6, 1, "V2", ["A3"], is_triple=True),
+        Piece(7, 1, "A1", ["B3"], is_triple=True)
+    ]
+    #'''
+
+    ''' EMF - CHINATOWN
 
     board.connect(hex1, 3, hex2) # 1, 2
     board.connect(hex2, 2, hex3) # 2, 3
@@ -125,7 +154,7 @@ if __name__ == '__main__':
     ]
     '''
 
-    #''' EFM 9
+    ''' EMF - Peter's House
 
     hex6 = Hexagon(6)
     board.add_hexagon(hex6)
@@ -146,7 +175,7 @@ if __name__ == '__main__':
         Piece(6, 0, "V2", ["B3", "A1"]),
         Piece(7, 0, "A3", ["A1", "V2"]),
     ]
-    # '''
+    '''
 
     board.solve(pieces)
     # print(board)

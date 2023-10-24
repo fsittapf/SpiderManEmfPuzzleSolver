@@ -11,7 +11,7 @@ class Hexagon:
         self.piece = None
 
     def __str__(self):
-        connected_sides = [f"{i+1}: (Hex {hexa.id}, Piece {hexa.piece.id})" for i, hexa in enumerate(self.connections) if hexa and hexa.piece]
+        connected_sides = [f"{i}: (Hex {hexa.id}, Piece {hexa.piece.id})" for i, hexa in enumerate(self.connections) if hexa and hexa.piece]
         return f"Hexagon {self.id}: [{', '.join(connected_sides)}]"
 
 
@@ -65,56 +65,90 @@ class Board:
 class Piece:
     VALID_VALUES = {"V2", "A3", "A1", "B3"}
 
-    def __init__(self, piece_id, values):
+    def __init__(self, piece_id, initial_position, start_value, next_values):
         self.id = piece_id
-        if not all(k in values and values[k] in Piece.VALID_VALUES for k in range(6)):
-            raise ValueError("Invalid piece values.")
-        self.values = values
+        self.values = {}
+        
+        if start_value not in Piece.VALID_VALUES:
+            raise ValueError(f"Invalid start value: {start_value}")
+        
+        if not all(value in Piece.VALID_VALUES for value in next_values):
+            raise ValueError(f"Invalid values in next_values: {next_values}")
+        
+        position = initial_position
+        
+        self.values[position] = start_value
+        position = (position + 1) % 6
+        self.values[position] = start_value
+        position = (position + 1) % 6
+        
+        for value in next_values:
+            self.values[position] = value
+            position = (position + 1) % 6
+            self.values[position] = value
+            position = (position + 1) % 6
 
     def __str__(self):
         return str(self.values)
 
+
 if __name__ == '__main__':
+    # Standard inicialization:
     board = Board()
+
     hex1 = Hexagon(1)
     hex2 = Hexagon(2)
     hex3 = Hexagon(3)
     hex4 = Hexagon(4)
     hex5 = Hexagon(5)
-    # hex6 = Hexagon(6)
 
     board.add_hexagon(hex1)
     board.add_hexagon(hex2)
     board.add_hexagon(hex3)
     board.add_hexagon(hex4)
     board.add_hexagon(hex5)
-    # board.add_hexagon(hex6)
+    
+    '''EFM - CHINATOWN
 
+    board.connect(hex1, 3, hex2) # 1, 2
+    board.connect(hex2, 2, hex3) # 2, 3
+    board.connect(hex3, 3, hex4) # 3, 4
+    board.connect(hex3, 2, hex5) # 3, 5
 
-    '''EFM - CHINATOWN'''
     pieces = [
-        Piece('Leaf1')
-    ] 
-
+        Piece(1, 0, "A3", ["V2", "A1"]),
+        Piece(2, 5, "A1", ['A3', 'V2']),
+        Piece(3, 1, "A1", ["B3", "V2"]),
+        Piece(4, 1, "A3", ["B3", "A1"]),
+        Piece(5, 0, "V2", ["A1", "A3"]),
+        Piece("Fixed Water", 1, "A1", ["A3", "B3"]),
+    ]
     '''
-    EFM 9
+
+    #''' EFM 9
+
+    hex6 = Hexagon(6)
+    board.add_hexagon(hex6)
+
     board.connect(hex1, 2, hex2) # 1, 2
     board.connect(hex2, 3, hex3) # 2, 3
     board.connect(hex3, 4, hex4) # 3, 4
     board.connect(hex4, 5, hex5) # 4, 5
     board.connect(hex5, 0, hex6) # 5, 6
     board.connect(hex6, 1, hex1) # 6, 1
+    
     pieces = [
-        Piece(1, {0: "B3", 1: "B3", 2: "V2", 3: "V2", 4: "A3", 5: "A3"}), # FolhaU
-        Piece(2, {0: "A1", 1: "A1", 2: "V2", 3: "V2", 4: "A3", 5: "A3"}), # HidrogenioU
-        Piece(3, {0: "V2", 1: "V2", 2: "A3", 3: "A3", 4: "B3", 5: "B3"}), # AguaU
-        Piece(4, {0: "V2", 1: "V2", 2: "A3", 3: "A3", 4: "A1", 5: "A1"}), # SolD1
-        Piece(5, {0: "A1", 1: "A1", 2: "B3", 3: "B3", 4: "A3", 5: "A3"}), # AguaD
-        Piece(6, {0: "V2", 1: "V2", 2: "B3", 3: "B3", 4: "A1", 5: "A1"}), # FolhaD
-        Piece(7, {0: "A3", 1: "A3", 2: "A1", 3: "A1", 4: "V2", 5: "V2"}), # SolD1
+        Piece(1, 0, "B3", ["V2", "A3"]),
+        Piece(2, 0, "A1", ["V2", "A3"]),
+        Piece(3, 0, "V2", ["A3", "B3"]),
+        Piece(4, 0, "V2", ["A3", "A1"]),
+        Piece(5, 0, "A1", ["B3", "A3"]),
+        Piece(6, 0, "V2", ["B3", "A1"]),
+        Piece(7, 0, "A3", ["A1", "V2"]),
     ]
-    '''
+    # '''
+
     board.solve(pieces)
     # print(board)
-    print()
+    # print()
     board.display_board_solution()
